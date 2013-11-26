@@ -6,7 +6,45 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>GRASS3 Agent</name>
 
+	<organization>
+		<!-- Used as the 'Vendor' for JNLP generation -->
+		<name>gattserver.myftp.org</name>
+	</organization>
+
 	<dependencies>
+
+		<!-- MigLayout -->
+		<dependency>
+			<groupId>com.miglayout</groupId>
+			<artifactId>miglayout-javafx</artifactId>
+			<version>4.2</version>
+		</dependency>
+
+		<!-- Apache Commons -->
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.6</version>
+		</dependency>
+
+		<!-- Logback -->
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>0.9.24</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.6.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
+			<version>1.6.1</version>
+		</dependency>
+
+		<!-- Groovy -->
 		<dependency>
 			<groupId>org.codehaus.groovy</groupId>
 			<artifactId>groovy-all</artifactId>
@@ -15,6 +53,9 @@
 	</dependencies>
 
 	<build>
+
+		<finalName>GRASS3 agent</finalName>
+
 		<plugins>
 
 			<plugin>
@@ -22,6 +63,22 @@
 				<artifactId>groovy-eclipse-compiler</artifactId>
 				<version>2.8.0-01</version>
 				<extensions>true</extensions>
+			</plugin>
+
+			<plugin>
+				<groupId>com.zenjava</groupId>
+				<artifactId>javafx-maven-plugin</artifactId>
+				<version>2.0</version>
+				<configuration>
+
+					<mainClass>org.myftp.gattserver.grass3.agent.App</mainClass>
+
+					<!-- only required if signing the jar file -->
+					<keyStoreAlias>example-user</keyStoreAlias>
+					<keyStorePassword>example-password</keyStorePassword>
+					<allPermissions>true</allPermissions>
+
+				</configuration>
 			</plugin>
 
 			<plugin>

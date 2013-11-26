@@ -1,5 +1,4 @@
 package org.myftp.gattserver.grass3.agent
 
-Tray tray = new Tray();
-
-
+GrassAgent agent = new GrassAgent();
+agent.startAgent();

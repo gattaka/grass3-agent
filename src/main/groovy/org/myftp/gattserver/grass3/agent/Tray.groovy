@@ -11,6 +11,7 @@ import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.naming.OperationNotSupportedException;
 import javax.swing.ImageIcon
 
 class Tray {
@@ -20,8 +21,8 @@ class Tray {
 	private def PopupMenu popup;
 
 	def showError(String msg) {
-		configureTray("grass_err.gif","Problém");
-		trayIcon.displayMessage("Problém", msg,
+		configureTray("grass_err.gif","ProblÃ©m");
+		trayIcon.displayMessage("ProblÃ©m", msg,
 				TrayIcon.MessageType.ERROR);
 	}
 
@@ -32,14 +33,14 @@ class Tray {
 	}
 
 	def showWarning(String msg) {
-		configureTray("grass_warn.gif","Upozornìní");
-		trayIcon.displayMessage("Upozornìní", msg,
+		configureTray("grass_warn.gif","UpozornÄ›nÃ­");
+		trayIcon.displayMessage("UpozornÄ›nÃ­", msg,
 				TrayIcon.MessageType.WARNING);
 	}
 
 	def showRemind(String msg) {
-		configureTray("grass_time.gif","Pøipomínka");
-		trayIcon.displayMessage("Pøipomínka", msg,
+		configureTray("grass_time.gif","PÅ™ipomÃ­nka");
+		trayIcon.displayMessage("PÅ™ipomÃ­nka", msg,
 				TrayIcon.MessageType.INFO);
 	}
 
@@ -72,8 +73,7 @@ class Tray {
 	Tray() {
 
 		if (!SystemTray.isSupported()) {
-			println "SystemTray is not supported";
-			return;
+			throw new OperationNotSupportedException();
 		}
 
 		popup = new PopupMenu();
@@ -84,10 +84,10 @@ class Tray {
 		CheckboxMenuItem cb1 = new CheckboxMenuItem("Set auto size");
 		CheckboxMenuItem cb2 = new CheckboxMenuItem("Set tooltip");
 		Menu displayMenu = new Menu("Zobrazit");
-		MenuItem errorItem = new MenuItem("Problém");
-		MenuItem warningItem = new MenuItem("Upozornìní");
+		MenuItem errorItem = new MenuItem("ProblÃ©m");
+		MenuItem warningItem = new MenuItem("UpozornÄ›nÃ­");
 		MenuItem infoItem = new MenuItem("Info");
-		MenuItem remindItem = new MenuItem("Pøipomínka");
+		MenuItem remindItem = new MenuItem("PÅ™ipomÃ­nka");
 		MenuItem noneItem = new MenuItem("Nic");
 		MenuItem exitItem = new MenuItem("Konec");
 
@@ -111,26 +111,26 @@ class Tray {
 
 		errorItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						showError("Chyba pøipojení - nemùu se pøipojit k serveru");
+						showError("Chyba pÅ™ipojenÃ­ - nemÅ¯Å¾u se pÅ™ipojit k serveru");
 					}
 				});
 
 		warningItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						showWarning("Upozornìní - plánovaè zaznamenal prošlou pøipomínku");
+						showWarning("UpozornÄ›nÃ­ - plÃ¡novaÄ zaznamenal proÅ¡lou pÅ™ipomÃ­nku");
 					}
 				});
 
 		infoItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						showInfo("Pøipojení bylo znovu úspìšnì navázáno");
+						showInfo("PÅ™ipojenÃ­ bylo znovu ÃºspÄ›Å¡nÄ› navÃ¡zÃ¡no");
 					}
 				});
 
 
 		remindItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						showRemind("Pøipomínka lékaøe");
+						showRemind("PÅ™ipomÃ­nka lÃ©kaÅ™e");
 					}
 				});
 
