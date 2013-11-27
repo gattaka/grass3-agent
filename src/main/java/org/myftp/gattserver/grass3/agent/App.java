@@ -20,16 +20,28 @@ public class App extends Application {
 
 	class WindowButtons extends HBox {
 
-		public WindowButtons() {
-			Button closeBtn = new Button("X");
-
+		public WindowButtons(final Stage primaryStage) {
+			Button closeBtn = new Button("x");
 			closeBtn.setOnAction(new EventHandler<ActionEvent>() {
-
 				public void handle(ActionEvent actionEvent) {
 					Platform.exit();
 				}
 			});
+			Button maximizeBtn = new Button("□");
+			maximizeBtn.setOnAction(new EventHandler<ActionEvent>() {
+				public void handle(ActionEvent actionEvent) {
+					primaryStage.setIconified(true);
+				}
+			});
+			Button minimizeBtn = new Button("_");
+			minimizeBtn.setOnAction(new EventHandler<ActionEvent>() {
+				public void handle(ActionEvent actionEvent) {
+					primaryStage.setIconified(true);
+				}
+			});
 
+			this.getChildren().add(minimizeBtn);
+			this.getChildren().add(maximizeBtn);
 			this.getChildren().add(closeBtn);
 		}
 	}
@@ -38,7 +50,7 @@ public class App extends Application {
 	public void start(Stage primaryStage) throws Exception {
 
 		// remove window decoration
-		primaryStage.initStyle(StageStyle.UNDECORATED);
+		primaryStage.initStyle(StageStyle.TRANSPARENT);
 
 		BorderPane borderPane = new BorderPane();
 		borderPane.setStyle("-fx-background-color: green;");
@@ -49,7 +61,7 @@ public class App extends Application {
 		toolBar.setPrefHeight(height);
 		toolBar.setMinHeight(height);
 		toolBar.setMaxHeight(height);
-		toolBar.getItems().add(new WindowButtons());
+		toolBar.getItems().add(new WindowButtons(primaryStage));
 
 		borderPane.setTop(toolBar);
 
