@@ -70,7 +70,11 @@ class Tray {
 		}
 	}
 
-	Tray() {
+	public void destroy() {
+		tray.remove(trayIcon);
+	}
+
+	Tray() throws OperationNotSupportedException {
 
 		if (!SystemTray.isSupported()) {
 			throw new OperationNotSupportedException();
