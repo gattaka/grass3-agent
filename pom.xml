@@ -6,6 +6,10 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>GRASS3 Agent</name>
 
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
 	<organization>
 		<!-- Used as the 'Vendor' for JNLP generation -->
 		<name>gattserver.myftp.org</name>
@@ -86,6 +90,8 @@
 				<!-- 2.8.0-01 and later require maven-compiler-plugin 3.1 or higher -->
 				<version>3.1</version>
 				<configuration>
+					<source>1.7</source>
+					<target>1.7</target>
 					<compilerId>groovy-eclipse-compiler</compilerId>
 					<!-- set verbose to be true if you want lots of uninteresting messages -->
 					<!-- <verbose>true</verbose> -->

@@ -14,7 +14,7 @@ import java.awt.event.ActionListener;
 import javax.naming.OperationNotSupportedException;
 import javax.swing.ImageIcon
 
-class Tray {
+abstract class Tray {
 
 	private def TrayIcon trayIcon;
 	private def SystemTray tray;
@@ -84,66 +84,29 @@ class Tray {
 		tray = SystemTray.getSystemTray();
 
 		// Create a pop-up menu components
-		MenuItem aboutItem = new MenuItem("O aplikaci");
-		CheckboxMenuItem cb1 = new CheckboxMenuItem("Set auto size");
-		CheckboxMenuItem cb2 = new CheckboxMenuItem("Set tooltip");
-		Menu displayMenu = new Menu("Zobrazit");
-		MenuItem errorItem = new MenuItem("Problém");
-		MenuItem warningItem = new MenuItem("Upozornění");
-		MenuItem infoItem = new MenuItem("Info");
-		MenuItem remindItem = new MenuItem("Připomínka");
-		MenuItem noneItem = new MenuItem("Nic");
+		MenuItem agentItem = new MenuItem("Grass3 Agent menu");
 		MenuItem exitItem = new MenuItem("Konec");
 
 		//Add components to pop-up menu
-		popup.add(aboutItem);
+		popup.add(agentItem);
 		popup.addSeparator();
-		popup.add(cb1);
-		popup.add(cb2);
-		popup.addSeparator();
-		popup.add(displayMenu);
-		displayMenu.add(errorItem);
-		displayMenu.add(warningItem);
-		displayMenu.add(infoItem);
-		displayMenu.add(remindItem);
-		displayMenu.add(noneItem);
 		popup.add(exitItem);
 
 		trayIcon = new TrayIcon();
 		trayIcon.setPopupMenu(popup);
+
 		showNormal();
 
-		errorItem.addActionListener(new ActionListener() {
+		agentItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						showError("Chyba připojení - nemůžu se připojit k serveru");
+						onShowWindow();
 					}
-				});
-
-		warningItem.addActionListener(new ActionListener() {
+				})
+		exitItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						showWarning("Upozornění - plánovač zaznamenal prošlou připomínku");
+						onExit();
 					}
-				});
-
-		infoItem.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						showInfo("Připojení bylo znovu úspěšně navázáno");
-					}
-				});
-
-
-		remindItem.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						showRemind("Připomínka lékaře");
-					}
-				});
-
-		noneItem.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						showNormal();
-					}
-				});
-
+				})
 
 		try {
 			tray.add(trayIcon);
@@ -152,5 +115,9 @@ class Tray {
 		}
 
 	}
+
+	protected abstract void onExit();
+
+	protected abstract void onShowWindow();
 
 }
