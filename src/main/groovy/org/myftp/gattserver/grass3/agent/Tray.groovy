@@ -10,6 +10,7 @@ import java.awt.SystemTray;
 import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter
 
 import javax.naming.OperationNotSupportedException;
 import javax.swing.ImageIcon
@@ -94,6 +95,13 @@ abstract class Tray {
 
 		trayIcon = new TrayIcon();
 		trayIcon.setPopupMenu(popup);
+
+		trayIcon.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(java.awt.event.MouseEvent e) {
+						onShowWindow();
+					}
+				});
 
 		showNormal();
 

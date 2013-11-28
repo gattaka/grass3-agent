@@ -11,17 +11,16 @@
     Currently a Rectangle node
 */
 .undecorator-background {
-	/* 	-fx-fill: #ece5cc; */
-	/* 	-fx-fill: radial-gradient(focus-angle 45deg, focus-distance 20%, center 25% 25%, */
-	/* 		radius 50%, reflect, #eeeeee88, #55555588 75%, dimgray); */
+	-fx-fill: #ece5cc;
 	/* 	-fx-arc-width: 5; */
 	/* 	-fx-arc-height: 5; */
-	/* 	-fx-background-color: red; */
+	-fx-padding: 0;
 }
 
 .main {
-	-fx-background-image: url("./bgr.png");
-	-fx-background-repeat: repeat-x;
+	/* 	-fx-background-image: url("./bgr.png"); */
+	/* 	-fx-background-repeat: repeat-x; */
+/* 	-fx-padding: 0; */
 }
 
 /*

@@ -37,13 +37,18 @@ public class App extends Application {
 	public void start(Stage stage) throws Exception {
 
 		this.stage = stage;
+		stage.setTitle("GRASS3 Agent");
 		AnchorPane root = new AnchorPane();
-		root.setStyle("-fx-background-color:#ece5cc");
+		root.setStyle("-fx-background-image: url(\"\\skin\\bgr.png\")");
+
+		// nezavírej aplikaci když se na okně udělá hide()
+		Platform.setImplicitExit(false);
 
 		Undecorator undecorator = new Undecorator(stage, root,
 				"stagedecoration.fxml", StageStyle.DECORATED);
 		Scene scene = new Scene(undecorator, MIN_WIDTH, MIN_HEIGHT);
 		undecorator.setFullscreenVisible(false);
+		undecorator.setAsStageDraggable(stage, root);
 
 		// app ikona
 		stage.getIcons().add(
@@ -67,7 +72,10 @@ public class App extends Application {
 
 				@Override
 				protected void onExit() {
-					end();
+					if (tray != null) {
+						tray.destroy();
+					}
+					Platform.exit();
 				}
 
 				@Override
@@ -100,13 +108,24 @@ public class App extends Application {
 	}
 
 	private void showWindow() {
-		stage.show();
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				stage.show();
+			}
+		});
 	}
 
 	private void end() {
-		if (tray != null) {
-			tray.destroy();
-		}
-		Platform.exit();
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				if (tray != null) {
+					stage.hide();
+				} else {
+					System.exit(0);
+				}
+			}
+		});
 	}
 }
