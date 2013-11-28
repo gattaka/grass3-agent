@@ -1,20 +1,24 @@
 package org.myftp.gattserver.grass3.agent;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import javax.naming.OperationNotSupportedException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 import insidefx.undecorator.Undecorator;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.ToolBar;
@@ -36,6 +40,10 @@ public class App extends Application {
 	private Tray tray;
 	private Stage stage;
 	private AnchorPane root;
+	private ApplicationContext context;
+
+	private Timer timer;
+	private boolean connectionStateOk = true;
 
 	public static void main(String[] args) {
 		launch(args);
@@ -44,10 +52,13 @@ public class App extends Application {
 	@Override
 	public void start(Stage stage) throws Exception {
 
+		context = new ClassPathXmlApplicationContext("spring/app-context.xml");
+		assert context != null;
+
 		this.stage = stage;
 		stage.setTitle("GRASS3 Agent");
 		root = new AnchorPane();
-		root.setStyle("-fx-background-image: url(\"\\skin\\bgr.png\")");
+		root.setStyle("-fx-background-image: url(\"skin/bgr.png\")");
 
 		// nezavírej aplikaci když se na okně udělá hide()
 		Platform.setImplicitExit(false);
@@ -77,10 +88,7 @@ public class App extends Application {
 
 				@Override
 				protected void onExit() {
-					if (tray != null) {
-						tray.destroy();
-					}
-					Platform.exit();
+					end();
 				}
 
 				@Override
@@ -95,21 +103,55 @@ public class App extends Application {
 		// Listeners
 		undecorator.closeProperty().addListener(new ChangeListener<Boolean>() {
 			public void changed(ObservableValue<? extends Boolean> arg0, Boolean arg1, Boolean arg2) {
-				end();
+				close();
 			}
 		});
 
 		// Components
-		ImageView titleImage = new ImageView(new Image("/skin/title.png", 142, 10, true, true));
+		createTitle();
+		createToolBar();
+
+		testService();
+
+		showWindow();
+	}
+
+	private void testService() {
+
+		final RestTemplate restTemplate = new RestTemplate();
+
+		timer = new Timer();
+		timer.scheduleAtFixedRate(new TimerTask() {
+			@Override
+			public void run() {
+				try {
+					String response = restTemplate.getForObject("http://localhost:8180/web/ws/agent/quote",
+							String.class);
+					tray.showInfo(response);
+					logger.info(response);
+					if (connectionStateOk == false) {
+						connectionStateOk = true;
+						tray.showNormal();
+					}
+				} catch (RestClientException e) {
+					logger.warn(e.getMessage());
+					if (connectionStateOk) {
+						connectionStateOk = false;
+						tray.showWarning("Nezdařilo se připojit k serveru");
+					}
+				}
+			}
+		}, 5000, 5000);
+
+	}
+
+	private void createTitle() {
+		ImageView titleImage = new ImageView(new Image("skin/title.png", 142, 10, true, true));
 		Glow glow = new Glow(0.8);
 		titleImage.effectProperty().set(glow);
 		root.getChildren().add(titleImage);
 		AnchorPane.setTopAnchor(titleImage, 7.0);
 		AnchorPane.setLeftAnchor(titleImage, 7.0);
-
-		createToolBar();
-
-		showWindow();
 	}
 
 	private void createToolBar() {
@@ -149,16 +191,25 @@ public class App extends Application {
 		});
 	}
 
-	private void end() {
+	private void close() {
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
 				if (tray != null) {
 					stage.hide();
 				} else {
-					System.exit(0);
+					end();
 				}
 			}
 		});
+	}
+
+	private void end() {
+		if (tray != null) {
+			tray.destroy();
+		}
+		timer.cancel();
+		Platform.exit();
+		System.exit(0);
 	}
 }
