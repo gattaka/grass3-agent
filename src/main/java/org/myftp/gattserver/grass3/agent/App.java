@@ -19,6 +19,10 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.ToolBar;
@@ -110,24 +114,70 @@ public class App extends Application {
 		// Components
 		createTitle();
 		createToolBar();
+		createGraph();
 
 		testService();
 
 		showWindow();
 	}
 
+	private void createGraph() {
+
+		XYChart.Data<String, Number>[] series1Data;
+
+		final CategoryAxis xAxis = new CategoryAxis();
+		final NumberAxis yAxis = new NumberAxis(0, 50, 10);
+		final BarChart<String, Number> bc = new BarChart<String, Number>(xAxis, yAxis);
+		bc.setId("pingGraph");
+		bc.setLegendVisible(false);
+		bc.setAnimated(false);
+		bc.setBarGap(0);
+		bc.setCategoryGap(1);
+		bc.setVerticalGridLinesVisible(false);
+		
+		bc.setPrefHeight(40);
+
+		// setup chart
+		bc.setTitle("Server Ping");
+		yAxis.setTickLabelFormatter(new NumberAxis.DefaultFormatter(yAxis, null, "ms"));
+		xAxis.setTickLabelsVisible(false);
+
+		// add starting data
+		XYChart.Series<String, Number> series1 = new XYChart.Series<String, Number>();
+
+		// noinspection unchecked
+		series1Data = new XYChart.Data[50];
+		String[] categories = new String[50];
+		for (int i = 0; i < series1Data.length; i++) {
+			categories[i] = Integer.toString(i + 1);
+			series1Data[i] = new XYChart.Data<String, Number>(categories[i], 10);
+			series1.getData().add(series1Data[i]);
+		}
+		bc.getData().add(series1);
+
+		for (int i = 0; i < series1Data.length; i++) {
+			series1Data[i].setYValue(i);
+		}
+
+		root.getChildren().add(bc);
+		AnchorPane.setTopAnchor(bc, 55.0);
+		AnchorPane.setLeftAnchor(bc, 5.0);
+		AnchorPane.setRightAnchor(bc, 5.0);
+
+	}
+
 	private void testService() {
 
-		final RestTemplate restTemplate = new RestTemplate();
+		final PingBean pingBean = context.getBean(PingBean.class);
 
 		timer = new Timer();
 		timer.scheduleAtFixedRate(new TimerTask() {
 			@Override
 			public void run() {
 				try {
-					String response = restTemplate.getForObject("http://localhost:8180/web/ws/agent/quote",
-							String.class);
+					String response = pingBean.ping();
 					tray.showInfo(response);
+					pingBean.ping();
 					logger.info(response);
 					if (connectionStateOk == false) {
 						connectionStateOk = true;
@@ -195,11 +245,12 @@ public class App extends Application {
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
-				if (tray != null) {
-					stage.hide();
-				} else {
-					end();
-				}
+				// TODO odkomentovat
+				// if (tray != null) {
+				// stage.hide();
+				// } else {
+				end();
+				// }
 			}
 		});
 	}
