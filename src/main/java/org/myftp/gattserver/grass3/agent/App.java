@@ -1,28 +1,13 @@
 package org.myftp.gattserver.grass3.agent;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
-import javax.naming.OperationNotSupportedException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
-
 import insidefx.undecorator.Undecorator;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.chart.BarChart;
-import javafx.scene.chart.CategoryAxis;
-import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.XYChart;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.ToolBar;
@@ -33,6 +18,14 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+
+import javax.naming.OperationNotSupportedException;
+
+import org.myftp.gattserver.grass3.agent.PingAgent.PingObserver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class App extends Application {
 
@@ -45,8 +38,8 @@ public class App extends Application {
 	private Stage stage;
 	private AnchorPane root;
 	private ApplicationContext context;
+	private PingAgent pingAgent;
 
-	private Timer timer;
 	private boolean connectionStateOk = true;
 
 	public static void main(String[] args) {
@@ -104,6 +97,9 @@ public class App extends Application {
 			logger.info("Tray icon not supported - app will minimize to taskbar");
 		}
 
+		// Ping agent
+		createPingAgent();
+
 		// Listeners
 		undecorator.closeProperty().addListener(new ChangeListener<Boolean>() {
 			public void changed(ObservableValue<? extends Boolean> arg0, Boolean arg1, Boolean arg2) {
@@ -116,83 +112,38 @@ public class App extends Application {
 		createToolBar();
 		createGraph();
 
-		testService();
-
 		showWindow();
 	}
 
 	private void createGraph() {
-
-		XYChart.Data<String, Number>[] series1Data;
-
-		final CategoryAxis xAxis = new CategoryAxis();
-		final NumberAxis yAxis = new NumberAxis(0, 50, 10);
-		final BarChart<String, Number> bc = new BarChart<String, Number>(xAxis, yAxis);
-		bc.setId("pingGraph");
-		bc.setLegendVisible(false);
-		bc.setAnimated(false);
-		bc.setBarGap(0);
-		bc.setCategoryGap(1);
-		bc.setVerticalGridLinesVisible(false);
-		
-		bc.setPrefHeight(40);
-
-		// setup chart
-		bc.setTitle("Server Ping");
-		yAxis.setTickLabelFormatter(new NumberAxis.DefaultFormatter(yAxis, null, "ms"));
-		xAxis.setTickLabelsVisible(false);
-
-		// add starting data
-		XYChart.Series<String, Number> series1 = new XYChart.Series<String, Number>();
-
-		// noinspection unchecked
-		series1Data = new XYChart.Data[50];
-		String[] categories = new String[50];
-		for (int i = 0; i < series1Data.length; i++) {
-			categories[i] = Integer.toString(i + 1);
-			series1Data[i] = new XYChart.Data<String, Number>(categories[i], 10);
-			series1.getData().add(series1Data[i]);
-		}
-		bc.getData().add(series1);
-
-		for (int i = 0; i < series1Data.length; i++) {
-			series1Data[i].setYValue(i);
-		}
-
-		root.getChildren().add(bc);
-		AnchorPane.setTopAnchor(bc, 55.0);
-		AnchorPane.setLeftAnchor(bc, 5.0);
-		AnchorPane.setRightAnchor(bc, 5.0);
-
+		PingChart chart = new PingChart();
+		root.getChildren().add(chart);
+		AnchorPane.setTopAnchor(chart, 55.0);
+		AnchorPane.setLeftAnchor(chart, 5.0);
+		AnchorPane.setRightAnchor(chart, 5.0);
+		pingAgent.addObserver(chart);
 	}
 
-	private void testService() {
-
-		final PingBean pingBean = context.getBean(PingBean.class);
-
-		timer = new Timer();
-		timer.scheduleAtFixedRate(new TimerTask() {
+	private void createPingAgent() {
+		pingAgent = context.getBean(PingAgent.class);
+		pingAgent.addObserver(new PingObserver() {
 			@Override
-			public void run() {
-				try {
-					String response = pingBean.ping();
-					tray.showInfo(response);
-					pingBean.ping();
-					logger.info(response);
-					if (connectionStateOk == false) {
-						connectionStateOk = true;
-						tray.showNormal();
-					}
-				} catch (RestClientException e) {
-					logger.warn(e.getMessage());
+			public void onPing(Long time) {
+				if (time == null) {
 					if (connectionStateOk) {
 						connectionStateOk = false;
 						tray.showWarning("Nezdařilo se připojit k serveru");
 					}
+				} else {
+					if (connectionStateOk == false) {
+						connectionStateOk = true;
+						tray.showInfo("Spojení se serverem bylo opět navázáno");
+						tray.showNormal();
+					}
 				}
 			}
-		}, 5000, 5000);
-
+		});
+		pingAgent.start(500);
 	}
 
 	private void createTitle() {
@@ -259,7 +210,8 @@ public class App extends Application {
 		if (tray != null) {
 			tray.destroy();
 		}
-		timer.cancel();
+		if (pingAgent != null)
+			pingAgent.stop();
 		Platform.exit();
 		System.exit(0);
 	}

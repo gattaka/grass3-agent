@@ -1,59 +1,60 @@
-package org.myftp.gattserver.grass3.agent
+package org.myftp.gattserver.grass3.agent;
 
 import java.awt.AWTException;
-import java.awt.CheckboxMenuItem;
 import java.awt.Image;
-import java.awt.Menu;
 import java.awt.MenuItem;
-import java.awt.PopupMenu
+import java.awt.PopupMenu;
 import java.awt.SystemTray;
 import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter
+import java.awt.event.MouseAdapter;
+import java.net.URL;
 
 import javax.naming.OperationNotSupportedException;
-import javax.swing.ImageIcon
+import javax.swing.ImageIcon;
 
 abstract class Tray {
 
-	private def TrayIcon trayIcon;
-	private def SystemTray tray;
-	private def PopupMenu popup;
+	private static final String ERROR_IMG = "grass_err.gif";
+	private static final String INFO_IMG = "grass_info.gif";
+	private static final String WARN_IMG = "grass_warn.gif";
+	private static final String TIME_IMG = "grass_time.gif";
+	private static final String OK_IMG = "grass.gif";
 
-	def showError(String msg) {
-		configureTray("grass_err.gif","Problém");
-		trayIcon.displayMessage("Problém", msg,
-				TrayIcon.MessageType.ERROR);
+	private TrayIcon trayIcon;
+	private SystemTray tray;
+	private PopupMenu popup;
+
+	public void showError(String msg) {
+		configureTray(ERROR_IMG, "Problém");
+		trayIcon.displayMessage("Problém", msg, TrayIcon.MessageType.ERROR);
 	}
 
-	def showInfo(String msg) {
-		configureTray("grass_info.gif","Info");
-		trayIcon.displayMessage("Info", msg,
-				TrayIcon.MessageType.INFO);
+	public void showInfo(String msg) {
+		configureTray(INFO_IMG, "Info");
+		trayIcon.displayMessage("Info", msg, TrayIcon.MessageType.INFO);
 	}
 
-	def showWarning(String msg) {
-		configureTray("grass_warn.gif","Upozornění");
-		trayIcon.displayMessage("Upozornění", msg,
-				TrayIcon.MessageType.WARNING);
+	public void showWarning(String msg) {
+		configureTray(WARN_IMG, "Upozornění");
+		trayIcon.displayMessage("Upozornění", msg, TrayIcon.MessageType.WARNING);
 	}
 
-	def showRemind(String msg) {
-		configureTray("grass_time.gif","Připomínka");
-		trayIcon.displayMessage("Připomínka", msg,
-				TrayIcon.MessageType.INFO);
+	public void showRemind(String msg) {
+		configureTray(TIME_IMG, "Připomínka");
+		trayIcon.displayMessage("Připomínka", msg, TrayIcon.MessageType.INFO);
 	}
 
-	def showNormal() {
-		configureTray("grass.gif");
+	public void showNormal() {
+		configureTray(OK_IMG);
 	}
 
-	private def configureTray(String imgName) {
+	private void configureTray(String imgName) {
 		configureTray(imgName, null);
 	}
 
-	private def configureTray(String imgName, String description) {
+	private void configureTray(String imgName, String description) {
 		if (tray == null)
 			return;
 		trayIcon.setImage(createImage(imgName, "tray icon"));
@@ -88,33 +89,33 @@ abstract class Tray {
 		MenuItem agentItem = new MenuItem("Grass3 Agent menu");
 		MenuItem exitItem = new MenuItem("Konec");
 
-		//Add components to pop-up menu
+		// Add components to pop-up menu
 		popup.add(agentItem);
 		popup.addSeparator();
 		popup.add(exitItem);
 
-		trayIcon = new TrayIcon();
+		trayIcon = new TrayIcon(createImage(OK_IMG, "tray icon"));
 		trayIcon.setPopupMenu(popup);
 
 		trayIcon.addMouseListener(new MouseAdapter() {
-					@Override
-					public void mouseClicked(java.awt.event.MouseEvent e) {
-						onShowWindow();
-					}
-				});
+			@Override
+			public void mouseClicked(java.awt.event.MouseEvent e) {
+				onShowWindow();
+			}
+		});
 
 		showNormal();
 
 		agentItem.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						onShowWindow();
-					}
-				})
+			public void actionPerformed(ActionEvent e) {
+				onShowWindow();
+			}
+		});
 		exitItem.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						onExit();
-					}
-				})
+			public void actionPerformed(ActionEvent e) {
+				onExit();
+			}
+		});
 
 		try {
 			tray.add(trayIcon);
