@@ -1,7 +1,8 @@
 package org.myftp.gattserver.grass3.agent;
 
-import insidefx.undecorator.Undecorator;
+import java.util.List;
 
+import insidefx.undecorator.Undecorator;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -21,7 +22,13 @@ import javafx.stage.StageStyle;
 
 import javax.naming.OperationNotSupportedException;
 
-import org.myftp.gattserver.grass3.agent.PingAgent.PingObserver;
+import org.myftp.gattserver.grass3.agent.medic.MedicAgent;
+import org.myftp.gattserver.grass3.agent.medic.MedicObserver;
+import org.myftp.gattserver.grass3.agent.ping.PingAgent;
+import org.myftp.gattserver.grass3.agent.ping.PingObserver;
+import org.myftp.gattserver.grass3.medic.dto.ScheduledVisitDTO;
+import org.myftp.gattserver.grass3.medic.dto.ScheduledVisitState;
+import org.myftp.gattserver.grass3.medic.util.MedicUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -39,6 +46,7 @@ public class App extends Application {
 	private AnchorPane root;
 	private ApplicationContext context;
 	private PingAgent pingAgent;
+	private MedicAgent medicAgent;
 
 	private boolean connectionStateOk = true;
 
@@ -97,8 +105,9 @@ public class App extends Application {
 			logger.info("Tray icon not supported - app will minimize to taskbar");
 		}
 
-		// Ping agent
+		// Agenti
 		createPingAgent();
+		createMedicAgent();
 
 		// Listeners
 		undecorator.closeProperty().addListener(new ChangeListener<Boolean>() {
@@ -112,7 +121,7 @@ public class App extends Application {
 		createToolBar();
 		createGraph();
 
-		showWindow();
+		// showWindow();
 	}
 
 	private void createGraph() {
@@ -124,11 +133,38 @@ public class App extends Application {
 		pingAgent.addObserver(chart);
 	}
 
+	private void createMedicAgent() {
+		medicAgent = context.getBean(MedicAgent.class);
+		medicAgent.addObserver(new MedicObserver() {
+			@Override
+			public void onEvent(List<ScheduledVisitDTO> scheduledVisits) {
+				int pending = 0;
+				int missed = 0;
+				for (ScheduledVisitDTO scheduledVisitDTO : scheduledVisits) {
+					if (MedicUtil.isVisitPending(scheduledVisitDTO)) {
+						pending++;
+					}
+					if (scheduledVisitDTO.getState().equals(ScheduledVisitState.MISSED)) {
+						missed++;
+					}
+				}
+
+				if (pending != 0) {
+					tray.showWarning("Medic modul hlásí " + pending + " nadcházejících událostí");
+				}
+				if (missed != 0) {
+					tray.showWarning("Medic modul hlásí " + missed + " zmeškaných událostí");
+				}
+			}
+		});
+		medicAgent.start(10000);
+	}
+
 	private void createPingAgent() {
 		pingAgent = context.getBean(PingAgent.class);
 		pingAgent.addObserver(new PingObserver() {
 			@Override
-			public void onPing(Long time) {
+			public void onEvent(Long time) {
 				if (time == null) {
 					if (connectionStateOk) {
 						connectionStateOk = false;
@@ -143,7 +179,7 @@ public class App extends Application {
 				}
 			}
 		});
-		pingAgent.start(500);
+		pingAgent.start(10000);
 	}
 
 	private void createTitle() {
@@ -196,12 +232,11 @@ public class App extends Application {
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
-				// TODO odkomentovat
-				// if (tray != null) {
-				// stage.hide();
-				// } else {
-				end();
-				// }
+				if (tray != null) {
+					stage.hide();
+				} else {
+					end();
+				}
 			}
 		});
 	}

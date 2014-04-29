@@ -1,4 +1,4 @@
-package org.myftp.gattserver.grass3.agent;
+package org.myftp.gattserver.grass3.agent.ping;
 
 public interface IPingBean {
 

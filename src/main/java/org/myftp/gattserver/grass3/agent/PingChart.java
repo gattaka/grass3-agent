@@ -1,6 +1,6 @@
 package org.myftp.gattserver.grass3.agent;
 
-import org.myftp.gattserver.grass3.agent.PingAgent.PingObserver;
+import org.myftp.gattserver.grass3.agent.ping.PingObserver;
 
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
@@ -47,7 +47,7 @@ public class PingChart extends BarChart<String, Number> implements PingObserver 
 	}
 
 	@Override
-	public void onPing(Long time) {
+	public void onEvent(Long time) {
 		for (int i = 0; i < series1Data.length; i++) {
 			if (i < series1Data.length - 2) {
 				series1Data[i].setYValue(series1Data[i + 1].getYValue());

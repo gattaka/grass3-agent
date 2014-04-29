@@ -21,7 +21,7 @@ public class LoggerAspect {
 	@Around("execution(* org.springframework.web.client.RestTemplate.getForObject(..))")
 	public Object getForObject(ProceedingJoinPoint joinPoint) throws Throwable {
 		try {
-			String result = (String) joinPoint.proceed();
+			Object result = joinPoint.proceed();
 			logger.info("REST getForObject result: " + result);
 			return result;
 		} catch (RestClientException e) {
@@ -30,7 +30,7 @@ public class LoggerAspect {
 		}
 	}
 
-	@Around("execution(* org.myftp.gattserver.grass3.agent.PingBean.ping(..))")
+	@Around("execution(* org.myftp.gattserver.grass3.agent.ping.PingBean.ping(..))")
 	public Object ping(ProceedingJoinPoint joinPoint) throws Throwable {
 
 		Object result = joinPoint.proceed();

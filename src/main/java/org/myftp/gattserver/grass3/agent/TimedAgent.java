@@ -5,29 +5,25 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 
-@Component
-public class PingAgent {
-
-	@Autowired
-	private IPingBean pingBean;
+/**
+ * @param <O> Typ observeru
+ * @param <R> Typ návratové pozorované hodnoty 
+ */
+public abstract class TimedAgent<O extends Observer<R>,R> {
 
 	private Timer timer;
 	private boolean started = false;
-	private Set<PingObserver> observers = new HashSet<>();
+	private Set<O> observers = new HashSet<>();
 
-	public static interface PingObserver {
-		public void onPing(Long time);
-	}
-
-	public boolean addObserver(PingObserver observer) {
+	protected abstract R checkEvent(); 
+	
+	public boolean addObserver(O observer) {
 		return observers.add(observer);
 	}
 
-	public boolean removeObserver(PingObserver observer) {
+	public boolean removeObserver(O observer) {
 		return observers.remove(observer);
 	}
 
@@ -42,12 +38,12 @@ public class PingAgent {
 			@Override
 			public void run() {
 				try {
-					Long response = pingBean.ping();
-					for (PingObserver observer : observers)
-						observer.onPing(response);
+					R response = checkEvent();
+					for (O observer : observers)
+						observer.onEvent(response);
 				} catch (RestClientException e) {
-					for (PingObserver observer : observers)
-						observer.onPing(null);
+					for (O observer : observers)
+						observer.onEvent(null);
 				}
 			}
 		}, 1, period);
